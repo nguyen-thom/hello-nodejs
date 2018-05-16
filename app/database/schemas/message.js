@@ -10,8 +10,9 @@ var Mongoose  = require('mongoose');
 var MessageSchema = new Mongoose.Schema({
     mid: { type: Number, required: true },
     aid: { type: Number, required: true},
-    message: { type: String, required: false, default: null},
-    lt : {type: Number, required: true, default: 0}
+    n:   { type: String, require: false},
+    c: { type: String, required: false, default: null}, //content
+    lt : {type: Date, required: true, default: 0}
 });
 
 var messageModel = Mongoose.model('message', MessageSchema);

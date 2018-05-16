@@ -78,6 +78,10 @@ var app = {
           app.helpers.updateNumOfUsers();
         });
 
+        socket.on('listInitMessage',function(messages){
+          app.helpers.updateListMessage(messages);
+        });
+
         // Append a new message 
         socket.on('addMessage', function(message) {
           app.helpers.addMessage(message);
@@ -89,6 +93,25 @@ var app = {
 
     encodeHTML: function (str){
       return $('<div />').text(str).html();
+    },
+
+    updateListMessage(messages){
+      messages.forEach(function(message){
+        message.lt      = (new Date(message.lt)).toLocaleString();
+        console.log("message content: " + message.c);
+        message.c     = app.helpers.encodeHTML(message.c);
+        message.n   = app.helpers.encodeHTML(message.n);
+
+        var html = `<li>
+                    <div class="message-data">
+                      <span class="message-data-name">${message.n}</span>
+                      <span class="message-data-time">${message.lt}</span>
+                    </div>
+                    <div class="message my-message" dir="auto">${message.c}</div>
+                  </li>`;
+        $(html).hide().appendTo('.chat-history ul').slideDown(100);
+      });
+      $(".chat-history").animate({ scrollTop: $('.chat-history')[0].scrollHeight}, 1000);
     },
 
     // Update rooms list
@@ -115,11 +138,11 @@ var app = {
 
         var html = '';
         for(var user of users) {
-          user.username = this.encodeHTML(user.username);
+          user.n = this.encodeHTML(user.n);
           html += `<li class="clearfix" id="user-${user.aid}">
-                     <img src="${user.picture}" alt="${user.username}" />
+                     <img src="${user.pic}" alt="${user.n}" />
                      <div class="about">
-                        <div class="name">${user.username}</div>
+                        <div class="name">${user.n}</div>
                         <div class="status"><i class="fa fa-circle online"></i> online</div>
                      </div></li>`;
         }

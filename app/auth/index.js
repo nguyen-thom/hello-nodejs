@@ -31,7 +31,7 @@ var init = function(){
 	// Plug-in Local Strategy
 	passport.use(new LocalStrategy(
 	  function(username, password, done) {
-	    User.findOne({ username: new RegExp(username, 'i'), socialId: null }, function(err, user) {
+	    User.findOne({'n': new RegExp(username, 'i'), 'sid': null }, function(err, user) {
 	      if (err) { return done(err); }
 
 	      if (!user) {
@@ -42,8 +42,9 @@ var init = function(){
 	        	if (err) { return done(err); }
 	        	if (!isMatch){
 	        		return done(null, false, { message: 'Incorrect username or password.' });
-	        	}
-	        	return done(null, user);
+						}
+						console.log("Auth done: " + JSON.stringify(user));
+						return done(null, user);
 	      });
 
 	    });

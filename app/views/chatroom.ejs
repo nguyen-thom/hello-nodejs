@@ -11,9 +11,9 @@
     <div class="container clearfix">
       <div class="chat">
         <div class="chat-header clearfix">
-          <img src="<%= user.picture %>" alt="avatar">
+          <img src="<%= user.pic %>" alt="avatar">
           <div class="chat-about">
-            <div class="chat-room"><%= room.title %></div>
+            <div class="chat-room"><%= room.n %></div>
             <div class="chat-num-users"> User(s)</div>
           </div>
           <i class="fa fa-users"></i>
@@ -43,6 +43,6 @@
     <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/main.js"></script>
-    <script>$(function(){app.chat('<%= room.mid %>', '<%= user.username %>')});</script>
+    <script>$(function(){app.chat('<%= room.mid %>', '<%= user.n %>')});</script>
   </body>
 </html>

@@ -32,16 +32,16 @@ router.post('/login', passport.authenticate('local', {
 // Register via username and password
 router.post('/register', function(req, res, next) {
 
-	var credentials = {'username': req.body.username, 'password': req.body.password };
+	var credentials = {'n': req.body.username, 'pw': req.body.password };
 
-	if(credentials.username === '' || credentials.password === ''){
+	if(credentials.n === '' || credentials.pw === ''){
 		req.flash('error', 'Missing credentials');
 		req.flash('showRegisterForm', true);
 		res.redirect('/');
 	}else{
 
 		// Check if the username already exists for non-social account
-		User.findOne({'username': new RegExp('^' + req.body.username + '$', 'i'), 'socialId': null}, function(err, user){
+		User.findOne({'n': new RegExp('^' + req.body.username + '$', 'i'), 'sid': null}, function(err, user){
 			if(err) throw err;
 			if(user){
 				req.flash('error', 'Username already exists.');

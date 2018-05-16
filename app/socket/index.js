@@ -5,6 +5,7 @@ var redis 	= require('redis').createClient;
 var adapter = require('socket.io-redis');
 
 var Room = require('../models/room');
+var Message = require('../models/message');
 
 /**
  * Encapsulates all code for emitting and listening to socket events
@@ -52,17 +53,21 @@ var ioEvents = function(io) {
 					// Then, if a room doesn't exist here, return an error to inform the client-side.
 					socket.emit('updateUsersList', { error: 'Room does not exist.' });
 				} else {
+					//emit get list message for id
+					Message.getTopMessage(mid,40, function(error,messages){
+						socket.emit("listInitMessage",messages );
+					});
 					// Check if user exists in the session
 					if(socket.request.session.passport == null){
 						return;
 					}
 					//add user to connection field
 					Room.addConnection(room, socket, function(err, newRoom){
-
+						if(err) console.log(err.message);
 						// Join the room channel
 						socket.join(newRoom.mid);
 
-						Room.getConnectionUser(newRoom, socket, function(err, users, cuntUserInRoom){
+						Room.getConnectionUsers(newRoom, socket, function(err, users, cuntUserInRoom){
 							if(err) throw err;
 							// Return list of all user connected to the room to the current user
 							socket.emit('updateUsersList', users, true);
@@ -80,6 +85,7 @@ var ioEvents = function(io) {
 
 		// When a socket exits
 		socket.on('disconnect', function() {
+			console.log("socket " + socket.id + 'disconnect on');
 
 			// Check if user exists in the session
 			if(socket.request.session.passport == null){
@@ -88,17 +94,17 @@ var ioEvents = function(io) {
 
 			// Find the room to which the socket is connected to, 
 			// and remove the current user + socket from this room
-			Room.removeUser(socket, function(err, room, userId, cuntUserInRoom){
+			Room.removeUser(socket, function(err, room, aid, cuntUserInRoom){
 				if(err) throw err;
 
 				// Leave the room channel
-				socket.leave(room.id);
+				socket.leave(room.mid);
 
 				// Return the user id ONLY if the user was connected to the current room using one socket
 				// The user id will be then used to remove the user from users list on chatroom page
-				if(cuntUserInRoom === 1){
-					socket.broadcast.to(room.id).emit('removeUser', userId);
-				}
+				//if(cuntUserInRoom === 1){
+				socket.broadcast.to(room.mid).emit('removeUser', aid);
+				//}
 			});
 		});
 
@@ -108,7 +114,15 @@ var ioEvents = function(io) {
 			// No need to emit 'addMessage' to the current socket
 			// As the new message will be added manually in 'main.js' file
 			// socket.emit('addMessage', message);
-			
+			var aid = socket.request.session.passport.user;
+			var mes = {
+				'aid': aid,
+				'mid': roomId,
+				'c': message.content,
+				'n': message.username,
+				'lt': Date.now()
+			}
+			Message.create(mes);
 			socket.broadcast.to(roomId).emit('addMessage', message);
 		});
 

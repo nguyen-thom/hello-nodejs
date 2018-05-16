@@ -44,22 +44,26 @@ var addMember = function(room, aid, atp, callback){
 var addConnection = function(room, socket, callback){
 	// Get current user's id
 	var aid = socket.request.session.passport.user;
+	console.log('add connection to room with account:' + aid);
 	var exist = false;
+	//found user exit in list member of room
 	room.m.forEach(function(member){
 		if(member.aid === aid ){
-			exist = true;
+			var conn = { aid: aid, sid: socket.id};
+			var i = -1;
+			room.c.forEach(function(connection,index){
+				if(connection.aid === aid){
+					i = index;
+				}
+			});
+			if(i != -1){
+				room.c.splice(i,1,conn);
+			}else{
+				room.c.push(conn);
+			}
+			room.save(callback);
 		}
 	});
-	if(!exist){
-		// Push a new connection object(i.e. {userId + socketId})
-		var conn = { aid: aid, socketId: socket.id};
-		room.connection.push(conn);
-		room.save(callback);
-	}else{
-		return callback(err);
-	}
-
-	
 }
 
 /**
@@ -104,7 +108,7 @@ var getUsers = function(room, socket, callback){
  * Get all connection user of room
  *
  */
-var getConnectionUser = function(room, socket, callback){
+var getConnectionUsers = function(room, socket, callback){
 
 	var users = [], vis = {}, cunt = 0;
 	var aid = socket.request.session.passport.user;
@@ -119,7 +123,7 @@ var getConnectionUser = function(room, socket, callback){
 
 		// 2. Create an array(i.e. users) contains unique users' ids
 		if(!vis[connection.aid]){
-			users.push(member.aid);
+			users.push(connection.aid);
 		}
 		vis[connection.aid] = true;
 	});
@@ -160,7 +164,7 @@ var removeUser = function(socket, callback){
 				if(conn.aid === aid){
 					cunt++;
 				}
-				if(conn.socketId === socket.id){
+				if(conn.sid === socket.id){
 					pass = false, target = i;
 				}
 			});
@@ -187,6 +191,6 @@ module.exports = {
 	addMember,
 	addConnection,
 	getUsers,
-	getConnectionUser,
+	getConnectionUsers,
 	removeUser
 };
