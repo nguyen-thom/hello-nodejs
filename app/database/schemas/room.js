@@ -11,7 +11,7 @@ var counterModel = require('./user').counterModel;
  */
 var RoomSchema = new Mongoose.Schema({
     //room id
-    mid: {type: Number, required: true,unique: true},
+    mid: {type: Number, required: false,unique: true},
     //room name
     n: { type: String, required: true },
     //member
@@ -36,11 +36,7 @@ var RoomSchema = new Mongoose.Schema({
 RoomSchema.pre('save', function(next) {
     var room = this;
     if(room.isNew){
-        counterModel.findByIdAndUpdate({_id: 'mid'}, {$inc: { seq: 1} }, {new: true, upsert: true},function(error, counter){
-            if(error){
-                console.log('error in create auto mid:' +  error);
-                return next(error);
-            }
+        counterModel.findByIdAndUpdate({_id: 'mid'}, {$inc: { seq: 1} }, {new: true, upsert: true}).then(function(counter){
             console.log("...count: "+JSON.stringify(counter));
             room.mid = counter.seq;
             next();

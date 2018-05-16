@@ -109,9 +109,9 @@ var app = {
                     </div>
                     <div class="message my-message" dir="auto">${message.c}</div>
                   </li>`;
-        $(html).hide().appendTo('.chat-history ul').slideDown(100);
+        $(html).hide().appendTo('.chat-history ul').slideDown(200);
       });
-      $(".chat-history").animate({ scrollTop: $('.chat-history')[0].scrollHeight}, 1000);
+      $(".chat-history").animate({ scrollTop: $('.chat-history')[messages.length].scrollHeight}, 1000);
     },
 
     // Update rooms list

@@ -27,7 +27,8 @@ var UserSchema = new Mongoose.Schema({
     n:   { type: String, required: true }, //name
     pw:  { type: String, default: null }, //password
     sid: { type: String, default: null }, //social id
-    pic: { type: String, default:  DEFAULT_USER_PICTURE} //picture
+    pic: { type: String, default:  DEFAULT_USER_PICTURE}, //picture
+    logout_at: { type: Date, required: false, default: null}// last logout
 });
 
 /**
