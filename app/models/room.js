@@ -70,7 +70,7 @@ var addConnection = function(room, socket, callback){
  * Get all member in chatroom
  *
  */
-var getUsers = function(room, socket, callback){
+var getMembers = function(room, socket, callback){
 
 	var users = [], vis = {}, cunt = 0;
 	var aid = socket.request.session.passport.user;
@@ -110,7 +110,7 @@ var getUsers = function(room, socket, callback){
  */
 var getConnectionUsers = function(room, socket, callback){
 
-	var users = [], vis = {}, cunt = 0;
+	var cons = [], vis = {}, cunt = 0;
 	var aid = socket.request.session.passport.user;
 
 	// Loop on room's connections, Then:
@@ -123,23 +123,11 @@ var getConnectionUsers = function(room, socket, callback){
 
 		// 2. Create an array(i.e. users) contains unique users' ids
 		if(!vis[connection.aid]){
-			users.push(connection.aid);
+			cons.push(connection);
 		}
 		vis[connection.aid] = true;
 	});
-
-	// Loop on each user id, Then:
-	// Get the user object by id, and assign it to users array.
-	// So, users array will hold users' objects instead of ids.
-	users.forEach(function(aid, i){
-		User.findOne({'aid': aid}, function(err, user){
-			if (err) { return callback(err); }
-			users[i] = user;
-			if(i + 1 === users.length){
-				return callback(null, users, cunt);
-			}
-		});
-	});
+	return callback(null, cons, cunt);
 }
 
 /**
@@ -190,7 +178,8 @@ module.exports = {
 	findById,
 	addMember,
 	addConnection,
-	getUsers,
+	//getUsers,
 	getConnectionUsers,
+	getMembers,
 	removeUser
 };

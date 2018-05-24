@@ -44,13 +44,13 @@ var app = {
         socket.emit('join', roomId);
 
         // Update users list upon emitting updateUsersList event
-        socket.on('updateUsersList', function(users, clear) {
+        socket.on('updateUsersList', function(users,connections, clear) {
 
           $('.container p.message').remove();
           if(users.error != null){
             $('.container').html(`<p class="message error">${users.error}</p>`);
           }else{
-            app.helpers.updateUsersList(users, clear);
+            app.helpers.updateUsersList(users, connections, clear);
           }
         });
 
@@ -71,10 +71,14 @@ var app = {
             app.helpers.addMessage(message);
           }
         });
+        socket.on('online_user',function(userId){
+          $('li#user-'+ userId +' .status .fa').removeClass('offline').addClass('online');
+        });
 
         // Whenever a user leaves the current room, remove the user from users list
         socket.on('removeUser', function(userId) {
-          $('li#user-' + userId).remove();
+          //$('li#user-' + userId).remove();
+          $('li#user-'+ userId +' .status .fa').removeClass('online').addClass('offline');
           app.helpers.updateNumOfUsers();
         });
 
@@ -131,19 +135,26 @@ var app = {
     },
 
     // Update users list
-    updateUsersList: function(users, clear){
+    updateUsersList: function(users, connections, clear){
         if(users.constructor !== Array){
           users = [users];
         }
 
         var html = '';
         for(var user of users) {
-          user.n = this.encodeHTML(user.n);
+          var online_class = 'offline';
+          console.log('Connections:' + connections);
+          for(var con of connections){
+            if(con.aid === user.aid){
+              online_class = 'online';
+            }
+          }
+          var user_name = this.encodeHTML(user.n);
           html += `<li class="clearfix" id="user-${user.aid}">
-                     <img src="${user.pic}" alt="${user.n}" />
+                     <img src="${user.pic}" alt="${user_name}" />
                      <div class="about">
-                        <div class="name">${user.n}</div>
-                        <div class="status"><i class="fa fa-circle online"></i> online</div>
+                        <div class="name">${user_name}</div>
+                        <div class="status"><i class="fa fa-circle ${online_class}"></i></div>
                      </div></li>`;
         }
 
@@ -156,6 +167,9 @@ var app = {
         }
 
         this.updateNumOfUsers();
+    },
+    offlineUser: function(user_id){
+      $('li#user-${user.aid} .status .fa').removeClass('online').addClass('offline');
     },
 
     // Adding a new message to chat history

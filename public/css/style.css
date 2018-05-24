@@ -19,7 +19,7 @@ body {
 
 .users-list {
   width: 270px;
-  float: left;
+  float: right;
 }
 .users-list .search {
   padding: 20px;

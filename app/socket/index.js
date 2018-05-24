@@ -42,7 +42,7 @@ var ioEvents = function(io) {
 	});
 
 	// Chatroom namespace
-	io.of('/chatroom').on('connection', function(socket) {
+	io.of('chatroom').on('connection', function(socket) {
 
 		// Join a chatroom
 		socket.on('join', function(mid) {
@@ -57,6 +57,7 @@ var ioEvents = function(io) {
 					Message.getTopMessage(mid,40, function(error,messages){
 						socket.emit("listInitMessage",messages );
 					});
+
 					// Check if user exists in the session
 					if(socket.request.session.passport == null){
 						return;
@@ -67,25 +68,32 @@ var ioEvents = function(io) {
 						// Join the room channel
 						socket.join(newRoom.mid);
 
-						Room.getConnectionUsers(newRoom, socket, function(err, users, cuntUserInRoom){
+						Room.getMembers(newRoom, socket, function(err, users, cuntUserInRoom){
 							if(err) throw err;
 							// Return list of all user connected to the room to the current user
-							socket.emit('updateUsersList', users, true);
+							Room.getConnectionUsers(newRoom,socket,function(err, connections,count){
+								if(err) throw err;
+								console.log("connection size:" + connections);
+								socket.emit('updateUsersList', users, connections, true);
+							});
 
 							// Return the current user to other connecting sockets in the room 
 							// ONLY if the user wasn't connected already to the current room
 							if(cuntUserInRoom === 1){
-								socket.broadcast.to(newRoom.mid).emit('updateUsersList', users[users.length - 1]);
+								//socket.broadcast.to(newRoom.mid).emit('updateUsersList', users[users.length - 1]);
 							}
 						});
+						var aid = socket.request.session.passport.user;
+						socket.broadcast.to(newRoom.mid).emit('online_user', aid);
 					});
+
 				}
 			});
 		});
 
 		// When a socket exits
 		socket.on('disconnect', function() {
-			console.log("socket " + socket.id + 'disconnect on');
+			console.log("socket [" + socket.id + '] disconnect on');
 
 			// Check if user exists in the session
 			if(socket.request.session.passport == null){
